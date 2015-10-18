@@ -31,5 +31,9 @@ dependencies {
     //Optional for RecyclerView
     compile 'com.github.gabrielemariotti.cards:cardslib-recyclerview:2.1.0'
     compile 'com.mcxiaoke.volley:library:1.0.19'
+    compile 'com.android.support:design:22.2.0'
+
+
+
 
 }

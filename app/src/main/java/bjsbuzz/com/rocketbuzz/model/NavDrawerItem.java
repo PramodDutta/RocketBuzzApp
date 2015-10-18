@@ -8,6 +8,16 @@ public class NavDrawerItem {
     private boolean showNotify;
     private String title;
 
+   /* public int getIconID() {
+        return iconID;
+    }
+
+    public void setIconID(int iconID) {
+        this.iconID = iconID;
+    }
+
+    private int iconID;*/
+
 
     public NavDrawerItem() {
 

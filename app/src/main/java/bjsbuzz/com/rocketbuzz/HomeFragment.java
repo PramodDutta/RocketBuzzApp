@@ -1,8 +1,10 @@
 package bjsbuzz.com.rocketbuzz;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.nfc.Tag;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
@@ -19,6 +21,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 
 import bjsbuzz.com.rocketbuzz.volly.AppController;
@@ -52,16 +55,19 @@ public class HomeFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        mCardArrayAdapter.notifyDataSetChanged();
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
+    public void onActivityCreated(Bundle savedInstanceState)
+    {
         super.onActivityCreated(savedInstanceState);
         makeJsonObjectRequest();
         mCardArrayAdapter.notifyDataSetChanged();
     }
 
-    private void makeJsonObjectRequest() {
+    private void makeJsonObjectRequest()
+    {
 
 
         // showpDialog();
@@ -78,40 +84,60 @@ public class HomeFragment extends Fragment {
                     // response will be a json object
                     String items = response.getString("items");
                     String titles = response.getString("title");
+                    String links = response.getString("link");
                     String descriptions = response.getString("description");
                     String author_names = response.getString("author_name");
 
                     String[] title;
+                    final String[] link;
                     String[] description;
                     String[] author_name;
                     title = titles.split(",");
+                        for(int z=0 ;z< title.length ;z++)
+                    {
+                        title[z] = title[z].replace("[","");
+                        title[z] = title[z].replace("#"," ");
+                        title[z] = title[z].replace("\"","");
+                        title[z] = title[z].replace("\\","");
+                        title[z] = title[z].replace("//","");
+                      //  Log.d(TAG,title[z]+"====");
+                    }
+
+                  //  Log.d(TAG, Arrays.asList(title));
                     description = descriptions.split(",");
+                    link = links.split(",");
                     author_name = author_names.split(",");
-
-
-                    jsonResponse = "";
-                    jsonResponse += "Titles: " + title.toString() + "\n\n";
-                    jsonResponse += "Descriptions : " + description.toString() + "\n\n";
-                    jsonResponse += "Author Names : " + author_name.toString() + "\n\n";
-                    jsonResponse += "Itesm : " + items + "\n\n";
 
 
                     cards = new ArrayList<Card>();
                     //Create a Card
                     Card card = null;
-                    CardThumbnail thumb = null;
+                  //  CardThumbnail thumb = null;
                     for (int i = 0; i < title.length; i++) {
                         card = new Card(getActivity().getApplication().getApplicationContext());
+                        if(title[i]!= "")
+                        {
+                            Log.d(TAG,title[i]+"====");
+                            card.setTitle(title[i]);
+                        }
 
-                        card.setTitle(title[i]);
+
                         card.setCardElevation(10);
                         card.setShadow(true);
+                        card.setOnClickListener(new Card.OnCardClickListener() {
+                            @Override
+                            public void onClick(Card card, View view) {
+                                Intent intent = new Intent(getActivity().getApplication(), DetailActivity.class);
+                                intent.putExtra("Link",card.getTitle());
+                                startActivity(intent);
+                            }
+                        });
                         cards.add(card);
                     }
 
                     mCardArrayAdapter.setCards(cards);
 
-                    Log.d(TAG, jsonResponse);
+                   // Log.d(TAG, jsonResponse);
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -155,11 +181,13 @@ public class HomeFragment extends Fragment {
         for (int i = 0; i < 10; i++) {
             card = new Card(getActivity().getApplication().getApplicationContext());
 
-            card.setTitle("" + i);
+            card.setTitle("Please Click Refresh Button..");
             card.setCardElevation(10);
             card.setShadow(true);
             cards.add(card);
         }
+
+
 
 
     }
@@ -181,13 +209,23 @@ public class HomeFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_home, container, false);
 
+
         mCardArrayAdapter = new CardArrayRecyclerViewAdapter(getActivity(), cards);
+
+        FloatingActionButton fab = (FloatingActionButton)rootView.findViewById(R.id.fabrefresh);
 
 
         //Staggered grid view
         mRecyclerView = (CardRecyclerView) rootView.findViewById(R.id.carddemo_recyclerview);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                makeJsonObjectRequest();
+                mCardArrayAdapter.notifyDataSetChanged();
+            }
+        });
 
         //Set the empty view
         if (mRecyclerView != null) {
@@ -206,16 +244,10 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        makeJsonObjectRequest();
+        mCardArrayAdapter.notifyDataSetChanged();
 
     }
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-    }
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-    }
 }
